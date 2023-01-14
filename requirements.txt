@@ -1,0 +1,10 @@
+numpy
+pillow
+wikipedia
+fontTools
+torchvision
+albumentations 
+kornia
+torch
+matplotlib
+tqdm
