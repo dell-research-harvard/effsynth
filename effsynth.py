@@ -38,6 +38,10 @@ if __name__ == '__main__':
         help="The size of a textline's font as a comma separated list")
     parser.add_argument("--textline_max_length", type=int, default=20,
         help="The max number of characters in a textline")
+    parser.add_argument("--article_max_lines", type=int, default=1,
+        help="The max number of lines in an article. IMPORTANT: if > 1, will generate bboxes for lines, not words/characters")
+    parser.add_argument("--article_mode_props", type=str, default=None,
+        help="The proportion of articles that are article format vs random placement format as a comma separated list")
     parser.add_argument("--textline_max_spaces", type=int, default=5,
         help="The max number of spaces in a textline")
     parser.add_argument('--transforms',
@@ -77,6 +81,11 @@ if __name__ == '__main__':
         _, covered_chars = get_unicode_coverage_from_ttf(font_path)
         coverage_dict[font_path] = covered_chars
 
+    # sort out lines vs articles
+    line_bboxes = False
+    if args.article_max_lines > 1:
+        line_bboxes = True
+
     # get char paths
     char_paths = [os.path.join(args.char_folder, x) for x in os.listdir(args.char_folder)]
     char_sets = args.char_sets.split(",")
@@ -111,11 +120,11 @@ if __name__ == '__main__':
         textline_generator = TextlineGenerator(
             setname, font_paths, char_sets_and_props, images_path, 
             synth_transform, coverage_dict,
-            args.textline_max_length, args.font_sizes, args.textline_max_spaces,
+            args.textline_max_length, args.article_max_lines, args.article_mode_props, args.font_sizes, args.textline_max_spaces,
             args.textline_numbers_geom_p, args.textline_max_numbers,
             args.language, args.vertical, args.specific_seqs,
             args.char_dist, args.char_dist_std, args.p_spec_seqs,
-            args.word_bbox, args.real_words, args.single_words,
+            args.word_bbox, line_bboxes, args.real_words, args.single_words,
             args.spec_seq_count, args.wiki_text
         )
 
