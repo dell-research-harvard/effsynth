@@ -135,8 +135,7 @@ class TextlineGenerator:
 
         random_page = None
         while random_page is None:
-            random_page_name = wikipedia.random(pages=1)
-            random_page = self.wiki_check(random_page_name)
+            random_page = self.wiki_check("https://en.wikipedia.org/wiki/Special:Random")
         
         random_content = self.clean_wiki_text(random_page.content)
 
