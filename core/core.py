@@ -15,7 +15,7 @@ class TextlineGenerator:
             max_length, font_sizes, max_spaces, num_geom_p, max_numbers,
             language, vertical, spec_seqs, char_dist, char_dist_std,
             p_specseq, word_bbox, real_words, single_words, specseq_count,
-            wiki_text
+            wiki_text, case_aug
         ):
 
         self.setname = setname
@@ -51,6 +51,7 @@ class TextlineGenerator:
         self.num_real_words = real_words
         self.single_words = single_words
         self.wiki_text = wiki_text
+        self.case_aug = case_aug
 
     def select_font(self):
 
@@ -139,12 +140,24 @@ class TextlineGenerator:
         
         random_content = self.clean_wiki_text(random_page.content)
 
-        num_chars = np.random.choice(range(1, self.max_length))
         synth_text = " "
 
-        while str.isspace(synth_text):
-            random_start_idx = np.random.choice(range(0, len(random_content) - num_chars))
-            synth_text = random_content[random_start_idx:random_start_idx+num_chars]
+        if self.num_real_words > 0:
+            num_words = np.random.choice(range(1, self.num_real_words))
+            split_random_content = random_content.split(" ")
+            while str.isspace(synth_text) or len(synth_text)==0:
+                random_start_idx = np.random.choice(range(0, len(split_random_content) - num_words))
+                synth_words = split_random_content[random_start_idx:random_start_idx+num_words]
+                if self.case_aug:
+                    case_func = np.random.choice([self.make_cap, self.make_upper, self.make_lower])
+                    synth_words = [case_func(x) for x in synth_words]
+                synth_text = "_".join(synth_words)
+        
+        else:
+            num_chars = np.random.choice(range(1, self.max_length))
+            while str.isspace(synth_text) or len(synth_text)==0:
+                random_start_idx = np.random.choice(range(0, len(random_content) - num_chars))
+                synth_text = random_content[random_start_idx:random_start_idx+num_chars]
             
         self.num_symbols = len(synth_text)
 
@@ -328,3 +341,15 @@ class TextlineGenerator:
         except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError):
             print("Retrying...")
             return None
+        
+    @staticmethod
+    def make_upper(w):
+        return w.upper()
+    
+    @staticmethod
+    def make_lower(w):
+        return w.lower()
+    
+    @staticmethod
+    def make_cap(w):
+        return w.capitalize()
